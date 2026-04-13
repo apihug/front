@@ -1,0 +1,28 @@
+{
+  "name": "@hope/realtime",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Protocol-agnostic realtime communication library (SSE/WebSocket)",
+  "scripts": {
+    "build": "echo 'realtime: source-only package, skip build'",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./utils": {
+      "types": "./src/utils/index.ts",
+      "default": "./src/utils/index.ts"
+    }
+  },
+  "keywords": [
+    "sse",
+    "websocket",
+    "realtime",
+    "streaming"
+  ]
+}
