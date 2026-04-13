@@ -17,7 +17,7 @@ front/
 │                              # https://github.com/vbenjs/vue-vben-admin
 │
 ├── @hope/                     # 扩展核心库
-│   ├── api-core/              # HTTP 客户端容器 (IoC 架构)
+│   ├── api/                   # HTTP 客户端容器 (IoC 架构)
 │   ├── api-antd-adapter/      # Ant Design / Vben UI 适配器
 │   └── realtime/              # 实时通信库 (SSE/WebSocket)
 │
