@@ -4,15 +4,15 @@
 
 ## Design Boundary
 
-- `@hope/api-core`: transport + neutral schema contract
+- `@hope/api`: transport + neutral schema contract
 - `@hope/api-antd-adapter`: UI rendering adapter (AntD / Vben)
 
-No AntD/Vben-specific structures should be placed in `@hope/api-core`.
+No AntD/Vben-specific structures should be placed in `@hope/api`.
 
 ## Install
 
 ```bash
-pnpm add @hope/api-antd-adapter @hope/api-core
+pnpm add @hope/api-antd-adapter @hope/api
 ```
 
 ## Quick Start
@@ -27,4 +27,4 @@ const columns = toAntdTableColumns(ResponseSchema.CustomerSummary)
 
 ## Usage Guide
 
-See [`docs/usage.md`](docs/usage.md).
+See [`docs/usage.md`](./docs/usage.md).

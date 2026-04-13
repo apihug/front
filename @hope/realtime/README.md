@@ -50,7 +50,7 @@ channel.send({ type: 'hello' })
 
 ## 使用手册
 
-详见：[`docs/usage.md`](docs/usage.md)
+详见：[`docs/usage.md`](./docs/usage.md)
 
 ## License
 

@@ -4,19 +4,43 @@
   "type": "module",
   "description": "Protocol-agnostic realtime communication library (SSE/WebSocket)",
   "scripts": {
-    "build": "echo 'realtime: source-only package, skip build'",
+    "build": "pnpm exec tsdown",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
   },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./src/index.ts",
-      "default": "./src/index.ts"
+      "development": "./src/index.ts",
+      "production": "./src/index.ts",
+      "default": "./dist/index.mjs"
     },
     "./utils": {
       "types": "./src/utils/index.ts",
-      "default": "./src/utils/index.ts"
+      "development": "./src/utils/index.ts",
+      "production": "./src/utils/index.ts",
+      "default": "./dist/utils/index.mjs"
+    }
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "./utils": {
+        "types": "./dist/utils/index.d.ts",
+        "default": "./dist/utils/index.mjs"
+      }
     }
   },
   "keywords": [

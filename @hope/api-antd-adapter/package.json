@@ -3,19 +3,64 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "build": "echo 'api-antd-adapter: source-only package, skip build'"
+    "build": "pnpm exec tsdown",
+    "typecheck": "tsc --noEmit"
   },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./src/index.ts",
-      "default": "./src/index.ts"
+      "development": "./src/index.ts",
+      "production": "./src/index.ts",
+      "default": "./dist/index.mjs"
     },
-    "./form": "./src/form.ts",
-    "./table": "./src/table.ts",
-    "./types": "./src/types.ts"
+    "./form": {
+      "types": "./src/form.ts",
+      "development": "./src/form.ts",
+      "production": "./src/form.ts",
+      "default": "./dist/form.mjs"
+    },
+    "./table": {
+      "types": "./src/table.ts",
+      "development": "./src/table.ts",
+      "production": "./src/table.ts",
+      "default": "./dist/table.mjs"
+    },
+    "./types": {
+      "types": "./src/types.ts",
+      "development": "./src/types.ts",
+      "production": "./src/types.ts",
+      "default": "./dist/types.mjs"
+    }
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "./form": {
+        "types": "./dist/form.d.ts",
+        "default": "./dist/form.mjs"
+      },
+      "./table": {
+        "types": "./dist/table.d.ts",
+        "default": "./dist/table.mjs"
+      },
+      "./types": {
+        "types": "./dist/types.d.ts",
+        "default": "./dist/types.mjs"
+      }
+    }
   },
   "dependencies": {
-    "@hope/api-core": "workspace:*"
+    "@hope/api": "workspace:*"
   },
   "peerDependencies": {
     "ant-design-vue": "catalog:"

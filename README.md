@@ -29,7 +29,7 @@ front/
 
 | 包名 | 说明 |
 |------|------|
-| `@hope/api-core` | HTTP 客户端容器，提供 IoC 架构、统一错误处理、文件上传 |
+| `@hope/api` | HTTP 客户端容器，提供 IoC 架构、统一错误处理、文件上传 |
 | `@hope/api-antd-adapter` | 将 ApiHug Schema 转换为 Ant Design / Vben UI 配置 |
 | `@hope/realtime` | 协议无关的实时通信库，支持 SSE 和 WebSocket |
 
@@ -67,7 +67,7 @@ pnpm install
 
 # 或分别安装
 cd vben && pnpm install
-cd ../@hope/api-core && pnpm install
+cd ../@hope/api && pnpm install
 cd ../@hope/api-antd-adapter && pnpm install
 cd ../@hope/realtime && pnpm install
 cd ../admin-center && pnpm install
@@ -154,7 +154,7 @@ git -C vben fetch --unshallow
 │  @hope/api-antd-adapter  │  @hope/realtime               │
 │     (UI 适配层)          │    (实时通信)                  │
 ├─────────────────────────────────────────────────────────┤
-│                   @hope/api-core                         │
+│                   @hope/api                         │
 │                   (核心 API 层)                          │
 ├─────────────────────────────────────────────────────────┤
 │                      vben/*                              │

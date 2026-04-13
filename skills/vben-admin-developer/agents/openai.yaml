@@ -1,0 +1,7 @@
+interface:
+  display_name: "Vben Developer"
+  short_description: "Develop and extend Vben-based frontend apps"
+  default_prompt: "Use $vben-admin-developer to implement or debug a feature in this Vben-based frontend repo."
+
+policy:
+  allow_implicit_invocation: true

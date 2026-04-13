@@ -1,4 +1,4 @@
-import type { ResponseItem, SchemaEnumMeta } from '@hope/api-core'
+import type { ResponseItem, SchemaEnumMeta } from '@hope/api'
 
 import type {
   AdapterContext,

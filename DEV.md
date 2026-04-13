@@ -42,7 +42,7 @@ git config:
 from  gitee  to github:
 
 ```shell
-git pull gitee main
+git pull gitee master
 git push
 ```
 

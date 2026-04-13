@@ -1,4 +1,4 @@
-import type { RequestItem, ResponseItem } from '@hope/api-core'
+import type { RequestItem, ResponseItem } from '@hope/api'
 
 export type EnumLabelPolicy = 'description' | 'description2' | 'name' | 'code'
 

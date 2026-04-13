@@ -66,6 +66,6 @@ const columns = toAntdTableColumns(ResponseSchema.ApiKeySummary, {
 
 ## 5. 建议实践
 
-- 将 adapter 作为 UI 层依赖，不要放入 `@hope/api-core`
+- 将 adapter 作为 UI 层依赖，不要放入 `@hope/api`
 - 复杂对象（`nodeKind=object`）优先走 `objectMode='skip'` + 自定义组件
 - 生成 Schema 后可在页面二次 merge（补充宽度、排序、特殊渲染）

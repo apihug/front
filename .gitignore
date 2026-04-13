@@ -14,9 +14,11 @@ private/**
 /node/
 node_tmp/
 node_modules/
+.pnpm-store/
 npm-debug.log.*
 /.awcache/*
 /.cache-loader/*
+dist/
 
 ######################
 # SASS

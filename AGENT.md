@@ -6,7 +6,7 @@ This repository is an integration layer around `vue-vben-admin`, not a standalon
 
 - `vben/` is the upstream `vue-vben-admin` monorepo pulled in as a Git submodule. It contains the real workspace, shared packages, docs, Vite config, and Nitro mock backend.
 - `admin-center/` is the custom app in this repo. It is largely derived from `vben/apps/web-antdv-next`, but switched from `antdv-next` to `ant-design-vue` and extended to use local `@hope/*` packages.
-- `@hope/api-core` is a framework-neutral API client container plus shared schema/types.
+- `@hope/api` is a framework-neutral API client container plus shared schema/types.
 - `@hope/api-antd-adapter` converts neutral ApiHug request/response schema into Ant Design / Vben form and table config.
 - `@hope/realtime` is a framework-neutral SSE/WebSocket library with unit tests.
 - `skills/` currently exists but is empty.
@@ -29,13 +29,13 @@ The main customizations over upstream `vben/apps/web-antdv-next` are:
 
 - UI library swap to `ant-design-vue`
 - custom request/response handling in `admin-center/src/api/request.ts`
-- IoC injection of the app request client into `@hope/api-core` in `admin-center/src/bootstrap.ts`
+- IoC injection of the app request client into `@hope/api` in `admin-center/src/bootstrap.ts`
 - local schema adapter re-export in `admin-center/src/adapter/api-schema.ts`
 - local realtime package prepared in code, but not fully wired yet
 
 Important current status:
 
-- `@hope/api-core` is actively wired into the app
+- `@hope/api` is actively wired into the app
 - `@hope/realtime` is present and tested, but the app bootstrap keeps realtime setup commented out
 - `@hope/api-antd-adapter` is available, but the current app views do not yet use it heavily
 - most visible pages are still inherited Vben auth/dashboard/demo/profile pages
@@ -146,7 +146,7 @@ Main endpoints used by `admin-center`:
 
 ## Where To Make Changes
 
-- Shared HTTP client behavior, neutral schema types, upload helpers: `@hope/api-core`
+- Shared HTTP client behavior, neutral schema types, upload helpers: `@hope/api`
 - Schema to Ant Design/Vben form or table conversion: `@hope/api-antd-adapter`
 - Realtime transport, parsers, reconnect logic: `@hope/realtime`
 - App routes, auth flow, request interceptors, views, adapters: `admin-center/src`
