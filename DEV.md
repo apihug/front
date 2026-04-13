@@ -35,3 +35,20 @@ git config:
 	remote = origin
 	merge = refs/heads/main
 ```
+
+
+## Two ways merger
+
+from  gitee  to github:
+
+```shell
+git pull gitee main
+git push
+```
+
+from github to gitee
+
+```shell
+git pull
+git push --all gitee
+```
