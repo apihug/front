@@ -1,4 +1,5 @@
 import type { RequestItem, ResponseItem } from '@hope/api'
+import type { ZodTypeAny } from 'zod'
 
 export type EnumLabelPolicy = 'description' | 'description2' | 'name' | 'code'
 
@@ -28,18 +29,22 @@ export interface AntdFormRule {
   message?: string
 }
 
+export type AdapterFormComponent =
+  | 'DatePicker'
+  | 'Input'
+  | 'InputNumber'
+  | 'RangePicker'
+  | 'Select'
+  | 'Switch'
+  | 'Textarea'
+  | 'TimePicker'
+  | 'Upload'
+  | (Record<never, never> & string)
+
 export interface AntdFormField {
   field: string
   label: string
-  component:
-    | 'DatePicker'
-    | 'Input'
-    | 'InputNumber'
-    | 'Select'
-    | 'Switch'
-    | 'TextArea'
-    | 'TimePicker'
-    | 'Upload'
+  component: AdapterFormComponent
   componentProps?: Record<string, unknown>
   required?: boolean
   rules?: AntdFormRule[]
@@ -47,25 +52,34 @@ export interface AntdFormField {
   schema: RequestItem
 }
 
+export type VbenFormRuleLike = 'required' | 'selectRequired' | ZodTypeAny | null
+
+export type VbenValueFormatLike = (
+  value: any,
+  setValue: (fieldName: string, value: any) => void,
+  values: Record<string, any>,
+) => any
+
 export interface VbenFormSchemaLike {
-  field: string
+  fieldName: string
   label: string
-  component: string
+  component: AdapterFormComponent
   required?: boolean
   componentProps?: Record<string, unknown>
-  rules?: AntdFormRule[]
   help?: string
-  schema: RequestItem
+  rules?: VbenFormRuleLike
+  valueFormat?: VbenValueFormatLike
 }
 
 export interface AntdTableColumn {
   key: string
-  dataIndex: string
+  dataIndex: string | string[]
   title: string
   sorter?: boolean
   ellipsis?: boolean
   customRender?: (ctx: { text: unknown; record: Record<string, unknown> }) => string
   schema: ResponseItem
+  [key: string]: any
 }
 
 export interface VxeTableColumnLike {
@@ -74,4 +88,5 @@ export interface VxeTableColumnLike {
   sortable?: boolean
   formatter?: (ctx: { cellValue: unknown; row: Record<string, unknown> }) => string
   schema: ResponseItem
+  [key: string]: any
 }

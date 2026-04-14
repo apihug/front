@@ -250,6 +250,8 @@ export type SchemaScalarType =
   | 'binary'
   | 'unknown'
 
+export type SchemaObjectMode = 'json' | 'manual' | 'skip' | 'string'
+
 export type SchemaFieldSource =
   | 'body'
   | 'query'
@@ -324,11 +326,13 @@ export interface RequestItem {
   dateFormat?: string
   enumRef?: SchemaEnumRef
   /**
-   * OBJECT kind rendering strategy.
-   * - manual: require custom renderer
-   * - json: treat as JSON editor/text area
+   * Object rendering hint.
+   * - manual: generator keeps the field neutral; adapter/page decides the final UI
+   * - json: prefer JSON editor / JSON serialization
+   * - string: degrade to a plain string input
+   * - skip: omit from default auto rendering
    */
-  objectMode?: 'json' | 'manual'
+  objectMode?: SchemaObjectMode
   validation?: SchemaValidation
   ui?: SchemaUiHint
 }
@@ -354,6 +358,13 @@ export interface ResponseItem {
   format?: string
   dateFormat?: string
   enumRef?: SchemaEnumRef
-  objectMode?: 'json' | 'manual'
+  /**
+   * Object rendering hint.
+   * - manual: generator keeps the field neutral; adapter/page decides the final UI
+   * - json: prefer JSON serialization in tables/detail views
+   * - string: degrade to plain string rendering
+   * - skip: omit from default auto rendering
+   */
+  objectMode?: SchemaObjectMode
   ui?: SchemaUiHint
 }

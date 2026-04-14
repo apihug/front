@@ -60,7 +60,8 @@
     }
   },
   "dependencies": {
-    "@hope/api": "workspace:*"
+    "@hope/api": "workspace:*",
+    "zod": "catalog:"
   },
   "peerDependencies": {
     "ant-design-vue": "catalog:"

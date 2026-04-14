@@ -1,20 +1,20 @@
-# @hope/api-antd-adapter 使用手册
+﻿# @hope/api-antd-adapter Usage
 
-## 1. 目标
+## Goal
 
-将 ApiHug 生成的中立 Schema：
+Convert neutral ApiHug schema:
 
 - `RequestItem[]`
 - `ResponseItem[]`
 
-转换为：
+into:
 
-- Ant Design Form 字段配置
-- Vben Form Schema
-- Ant Design Table 列
-- Vxe Table 列
+- Ant Design Vue form fields
+- Vben form schema
+- Ant Design Vue table columns
+- Vxe table columns
 
-## 2. 基本用法
+## Basic Usage
 
 ```ts
 import {
@@ -25,11 +25,16 @@ import {
 } from '@hope/api-antd-adapter'
 import { RequestSchema, ResponseSchema } from '@hope/aip-app-sdk/schema'
 
-const createCustomerForm = toVbenFormSchema(RequestSchema.CreateCustomerRequest)
+const createCustomerForm = toVbenFormSchema(RequestSchema.CreateCustomerRequest, {
+  objectMode: 'json',
+})
+
+const customerFields = toAntdFormFields(RequestSchema.CreateCustomerRequest)
 const customerColumns = toAntdTableColumns(ResponseSchema.CustomerSummary)
+const customerVxeColumns = toVxeTableColumns(ResponseSchema.CustomerSummary)
 ```
 
-## 3. i18n 与显示策略
+## Adapter Context
 
 ```ts
 const formSchema = toVbenFormSchema(RequestSchema.CreateCustomerRequest, {
@@ -39,33 +44,142 @@ const formSchema = toVbenFormSchema(RequestSchema.CreateCustomerRequest, {
 })
 ```
 
-`enumLabelPolicy` 可选值：
+Supported context fields:
 
-- `description`
-- `description2`
-- `name`
-- `code`
+- `t`: translate `i18key`
+- `enumLabelPolicy`: `description | description2 | name | code`
+- `objectMode`: `json | skip | string`
+- `formatDate`: custom response date formatting for tables
 
-`objectMode` 可选值：
+## Vben Form Mapping
 
-- `json`: 将对象字段按 JSON 文本输入处理
-- `skip`: 跳过对象字段，交给业务页面手写
-- `string`: 退化为普通输入框
+The adapter maps neutral request schema into the Vben contract described by the local Vben docs:
 
-## 4. 日期格式化
+- `key` or `name` -> `fieldName`
+- `title` / `description` / `i18key` -> `label` and `help`
+- `ui.widget` -> explicit component override
+- `ui.props` -> merged into `componentProps`
+- `required` -> `'required'` or `'selectRequired'` for simple cases
+- advanced validation -> `zod` rules
+- upload fields and JSON editor fields -> `valueFormat`
+
+Example output shape:
+
+```ts
+[
+  {
+    fieldName: 'email',
+    label: 'Email',
+    component: 'Input',
+    rules: z.string().email(),
+  },
+  {
+    fieldName: 'attachments',
+    label: 'Attachments',
+    component: 'Upload',
+    valueFormat(value) {
+      return Array.isArray(value) ? value.map((item) => item.originFileObj ?? item) : undefined
+    },
+  },
+]
+```
+
+## Validation Strategy
+
+The adapter intentionally does not emit AntD-style rule arrays for Vben forms.
+
+It uses:
+
+- `'required'` for simple text/number required checks
+- `'selectRequired'` for select/date/time style components
+- `zod` for:
+  - arrays
+  - uploads
+  - JSON textareas
+  - `email`
+  - `uuid`
+  - numeric ranges and `multipleOf`
+  - string length and regex checks
+  - min/max item counts
+
+## Object Field Strategy
+
+Generated schema can stay neutral with `objectMode: 'manual'`.
+
+The adapter can then resolve object fields in one of three ways:
+
+- `json`: render a JSON textarea in forms and JSON-string cells in tables
+- `string`: degrade to plain string input/rendering
+- `skip`: omit the field/column from default auto rendering
+
+Per-field schema can override the global adapter choice with `objectMode: 'json'`, `objectMode: 'string'`, or `objectMode: 'skip'`.
+
+## Enum Strategy
+
+When `enumRef` is present:
+
+- forms use `Select`
+- array enums use `Select` with `mode: 'multiple'`
+- tables render enum labels through the configured `enumLabelPolicy`
+
+## Nested Response Path
+
+Use `path` when the API payload is nested but the column still needs a flat schema entry.
+
+```ts
+{
+  key: 'city',
+  dataIndex: 'city',
+  path: 'address.city',
+  title: 'City',
+  nodeKind: 'scalar',
+  scalarType: 'string',
+  tsType: 'string',
+  container: 'single',
+}
+```
+
+The adapter will:
+
+- map AntD `dataIndex` to `['address', 'city']`
+- map Vxe `field` to `'address.city'`
+
+## UI Hints
+
+Use neutral `ui` hints rather than framework-specific schema:
+
+```ts
+{
+  key: 'payload',
+  name: 'payload',
+  nodeKind: 'object',
+  scalarType: 'unknown',
+  tsType: 'CreatePayload',
+  container: 'single',
+  objectMode: 'json',
+  ui: {
+    widget: 'Textarea',
+    props: {
+      autoSize: { minRows: 4, maxRows: 12 },
+    },
+  },
+}
+```
+
+## Date Formatting In Tables
 
 ```ts
 const columns = toAntdTableColumns(ResponseSchema.ApiKeySummary, {
   formatDate(value, schema) {
     if (!value) return ''
-    // 这里可按 schema.dateFormat 接入 dayjs
-    return String(value)
+    return dayjs(value).format(schema.dateFormat || 'YYYY-MM-DD HH:mm:ss')
   },
 })
 ```
 
-## 5. 建议实践
+## Recommended Practice
 
-- 将 adapter 作为 UI 层依赖，不要放入 `@hope/api`
-- 复杂对象（`nodeKind=object`）优先走 `objectMode='skip'` + 自定义组件
-- 生成 Schema 后可在页面二次 merge（补充宽度、排序、特殊渲染）
+- Keep the schema package neutral. Do not leak Vben-only fields into `@hope/api`.
+- Keep Java generation simple and stable.
+- Put rendering behavior into the adapter.
+- Merge page-specific customizations after adapter output instead of hardcoding them into the generator.
