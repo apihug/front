@@ -420,7 +420,7 @@ function applyNumberValidation(
     validation?.digitsInteger !== undefined ||
     validation?.digitsFraction !== undefined
   ) {
-    nextRule = nextRule.refine((value: number) => {
+    return nextRule.refine((value: number) => {
       const [integerPart = '', fractionPart = ''] = `${Math.abs(value)}`.split('.')
       if (
         validation?.digitsInteger !== undefined &&
@@ -469,11 +469,11 @@ function applyTimeConstraint(
   }
 }
 
-function applyArrayValidation(
-  rule: z.ZodArray<z.ZodTypeAny>,
+function applyArrayValidation<T extends z.ZodTypeAny>(
+  rule: z.ZodArray<T>,
   item: RequestItem,
   label: string,
-) {
+): z.ZodArray<T> {
   let nextRule = rule
   const validation = item.validation
   const minimum = validation?.minItems ?? (item.required ? 1 : undefined)
@@ -611,7 +611,7 @@ function buildTemporalStringSchema(item: RequestItem, label: string) {
 
   const timeConstraintType = item.validation?.timeConstraintType
   if (timeConstraintType && item.scalarType !== 'time') {
-    rule = rule.refine(
+    return rule.refine(
       (value: string) => applyTimeConstraint(value, timeConstraintType),
       `${label} is invalid`,
     )
@@ -640,7 +640,7 @@ function buildScalarValueRule(item: RequestItem, label: string) {
     })
 
     if (item.validation?.assertable !== undefined) {
-      rule = rule.refine(
+      return rule.refine(
         (value: boolean) => value === item.validation?.assertable,
         `${label} is invalid`,
       )

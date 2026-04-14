@@ -17,6 +17,7 @@ export interface ApiClient {
   get<T = any>(url: string, config?: ApiRequestConfig): Promise<T>
   post<T = any>(url: string, data?: any, config?: ApiRequestConfig): Promise<T>
   put<T = any>(url: string, data?: any, config?: ApiRequestConfig): Promise<T>
+  patch?<T = any>(url: string, data?: any, config?: ApiRequestConfig): Promise<T>
   delete<T = any>(url: string, data?: any, config?: ApiRequestConfig): Promise<T>
   request<T = any>(url: string, config?: ApiRequestConfig): Promise<T>
 }
@@ -70,6 +71,8 @@ let apiClient: ApiClient | null = null
 export function configureApiClient(client: ApiClient): void {
   apiClient = client
 }
+
+export const setApiClient = configureApiClient
 
 /**
  * 获取已注入的客户端（供服务包内部使用）
@@ -129,6 +132,27 @@ export function usePut<R = any, D = any, P extends Record<string, any> = Record<
   config?: ApiRequestConfig & RequestConfigExtra,
 ): Promise<R> {
   return getApiClient().put<R>(url, data, { ...config, params: params ?? undefined })
+}
+
+/**
+ * PATCH 璇锋眰
+ */
+export function usePatch<R = any, D = any, P extends Record<string, any> = Record<string, any>>(
+  url: string,
+  data?: D,
+  params?: P | null,
+  config?: ApiRequestConfig & RequestConfigExtra,
+): Promise<R> {
+  const client = getApiClient()
+  const nextConfig = { ...config, params: params ?? undefined }
+  if (typeof client.patch === 'function') {
+    return client.patch<R>(url, data, nextConfig)
+  }
+  return client.request<R>(url, {
+    ...nextConfig,
+    data,
+    method: 'PATCH',
+  })
 }
 
 /**
