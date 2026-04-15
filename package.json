@@ -1,0 +1,11 @@
+{
+  "name": "front-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "vben:zip": "node ./scripts/vben-zip.mjs"
+  },
+  "dependencies": {
+    "archiver": "^7.0.1"
+  }
+}

@@ -43,20 +43,7 @@ front/
 ### Clone 项目
 
 ```bash
-# 推荐：一键浅克隆（front + vben submodule 都只取最新提交）
-git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/apihug/front.git
-
-# 等效分步写法
-# git clone --depth 1 https://github.com/apihug/front.git
-# cd front
-# git submodule update --init --depth 1
-```
-
-### 已克隆项目后初始化 Submodule
-
-```bash
-# 如果已经 clone 了主仓库，补拉 submodule（浅克隆）
-git submodule update --init --depth 1
+git clone --depth 1  https://github.com/apihug/front.git
 ```
 
 ### 安装依赖
@@ -80,70 +67,6 @@ cd admin-center
 pnpm dev
 ```
 
-## Submodule 操作指南
-
-### 更新 Vben 到最新版本
-
-```bash
-# 更新 submodule 到远程最新
-git submodule update --remote vben
-
-# 或进入 submodule 目录操作
-cd vben
-git pull origin main
-cd ..
-git add vben
-git commit -m "chore: update vben submodule"
-```
-
-### 切换 Vben 版本/分支
-
-```bash
-cd vben
-git checkout v5.5.0  # 切换到特定 tag
-# 或
-git checkout main     # 切换到主分支
-cd ..
-git add vben
-git commit -m "chore: pin vben to v5.5.0"
-```
-
-### 团队协作注意
-
-当 `vben` submodule 有更新时：
-
-```bash
-# 拉取主仓库更新后，同步 submodule
-git pull
-git submodule update --init --recursive
-```
-
-### 常见问题
-
-**Q: Submodule 显示为空目录？**
-
-```bash
-git submodule update --init --recursive
-```
-
-**Q: Submodule 状态异常？**
-
-```bash
-# 检查状态
-git submodule status
-
-# 重新初始化
-git submodule deinit -f vben
-git submodule update --init --depth 1 vben
-```
-
-**Q: 需要完整历史记录？**
-
-```bash
-# 将浅克隆转为完整克隆
-git -C vben fetch --unshallow
-```
-
 ## 架构原则
 
 ```
@@ -165,6 +88,12 @@ git -C vben fetch --unshallow
 - 扩展库 (`@hope/*`) 专注团队定制化需求
 - 官方升级时，最大程度复用 Vben 基础设施
 - 业务应用层 (`admin-center`) 组合使用扩展和官方包
+
+
+## Build Local
+
+```pnpm vben:zip```
+
 
 ## License
 
