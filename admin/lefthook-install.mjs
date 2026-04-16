@@ -56,8 +56,7 @@ function main() {
         execSync('pnpm exec lefthook install', { stdio: 'inherit' });
         console.log('[INFO] lefthook installed successfully');
     } catch (error) {
-        console.error('[ERROR] Failed to install lefthook:', error.message);
-        process.exit(1);
+        console.warn('[WARN] Failed to install lefthook, continuing without hooks:', error.message);
     } finally {
         process.chdir(originalCwd);
     }
