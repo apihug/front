@@ -90,6 +90,12 @@ pnpm dev
 - 业务应用层 (`admin-center`) 组合使用扩展和官方包
 
 
+
+## SDK
+
+所有 api 将会生成 SDK 到 `@sdk` (generated SDK package `@sdk/{domain}-{module}`)目录 参考规则 [apihug-impl-front-vben-guide.md](https://github.com/apihug/skills/blob/main/rules/apihug-impl-front-vben-guide.md)。
+
+
 ## Build Local
 
 ```pnpm vben:zip```
