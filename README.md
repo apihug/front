@@ -4,7 +4,7 @@
 
 ## 项目概述
 
-本项目是对官方 Vben Admin 框架的扩展实现，通过 Git Submodule 机制：
+本项目是对官方 Vben Admin 框架的扩展实现：
 
 - **享受官方升级红利**：最大程度利用 Vben 的基础设施和持续更新
 - **满足定制化需求**：团队专属的扩展库和业务模块
@@ -13,7 +13,7 @@
 
 ```
 front/
-├── vben/                      # [Submodule] 官方 Vue Vben Admin
+├── vben.zip                   # 官方 Vue Vben Admin Snapshot
 │                              # https://github.com/vbenjs/vue-vben-admin
 │
 ├── @hope/                     # 扩展核心库
