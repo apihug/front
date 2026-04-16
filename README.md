@@ -104,3 +104,12 @@ pnpm dev
 ## License
 
 MIT
+
+## Refer
+
+1. [Quick Start](https://apihug.github.io/zhCN-docs/start.html)
+2. [Front](https://github.com/apihug/front)
+3. [Skill](https://github.com/apihug/skills)
+4. [Rapid Application Build Archetype](https://github.com/apihug/apihug-archetype)
+
+😙 SDK 版本： <a target="_blank" href="https://search.maven.org/artifact/com.apihug/it-bom"><img src="https://img.shields.io/maven-central/v/com.apihug/it-bom.svg?label=Maven%20Central" /></a> 
