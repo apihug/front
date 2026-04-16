@@ -1,11 +1,15 @@
 import { preferences } from '@vben/preferences';
 import { configureApiClient, type ApiClient } from '@hope/api';
 import { configureRealtimeClient } from '@hope/realtime';
+import { useAppConfig } from '@vben/hooks';
 
 
 import { requestClient } from '#/api/request';
 import { getApiURL } from '#/utils/app-config';
 import {useAccessStore} from "@vben/stores";
+
+
+const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD);
 
 
 // 创建 ApiClient 适配器
@@ -27,7 +31,6 @@ async function initClient() {
 
   // 配置 realtime 客户端（IoC 依赖注入）
   // 注入 baseURL 和动态 headers，SSE/WebSocket 自动使用
-  const apiURL = getApiURL();
   configureRealtimeClient({
     baseURL: apiURL,
     getHeaders: () => {
