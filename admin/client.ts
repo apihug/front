@@ -5,7 +5,6 @@ import { useAppConfig } from '@vben/hooks';
 
 
 import { requestClient } from '#/api/request';
-import { getApiURL } from '#/utils/app-config';
 import {useAccessStore} from "@vben/stores";
 
 
