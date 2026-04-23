@@ -8,6 +8,7 @@
 - ✅ **SSE 支持**：基于 fetch + ReadableStream，支持流式数据
 - ✅ **WebSocket 支持**：内置心跳、自动重连
 - ✅ **可插拔 Parser**：框架提供工具，业务层注入解析器
+- ✅ **结构化错误**：统一透传 SSE / WebSocket 的上下文和底层 cause
 - ✅ **类型安全**：完整的 TypeScript 支持
 
 ## 安装
@@ -35,13 +36,22 @@ for await (const message of client.stream(request, { parser })) {
 ### WebSocket 客户端
 
 ```typescript
-import { WebSocketClient } from '@hope/realtime'
+import { WebSocketClient, WebSocketChannelError } from '@hope/realtime'
 
 const client = new WebSocketClient('ws://localhost:8080')
-const channel = await client.connect<MyMessage>()
 
-channel.on('message', (msg) => console.log(msg))
-channel.send({ type: 'hello' })
+try {
+  const channel = await client.connect<MyMessage>()
+  channel.on('message', (msg) => console.log(msg))
+  channel.on('error', (error) => {
+    if (error instanceof WebSocketChannelError) {
+      console.error(error.kind, error.url, error.readyState, error.cause)
+    }
+  })
+  channel.send({ type: 'hello' })
+} catch (error) {
+  console.error('connect failed', error)
+}
 ```
 
 ## 架构设计

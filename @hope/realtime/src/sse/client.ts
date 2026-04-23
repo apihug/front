@@ -7,6 +7,7 @@
 
 import type { SSEOptions, SSEStreamOptions } from '../types'
 import { getRealtimeConfig, resolveURL, getLogger } from '../config'
+import { createSSEClientError, SSEClientError } from './error'
 
 /**
  * SSE 客户端（泛型设计，业务无关）
@@ -51,18 +52,23 @@ export class SSEClient {
     options?: SSEStreamOptions
   ): AsyncIterable<any> {
     this.abortController = new AbortController()
+    let fullURL: string | undefined
+    let response: Response | undefined
+    let currentChunk: string | undefined
+    let phase: 'config' | 'request' | 'response' | 'parse' | 'stream' = 'config'
     
     try {
       // 解析完整 URL
       const config = getRealtimeConfig()
-      const fullURL = resolveURL(this.url, config?.baseURL)
+      fullURL = resolveURL(this.url, config?.baseURL)
       
       // 动态获取 headers
       const dynamicHeaders = config?.getHeaders 
         ? await config.getHeaders() 
         : {}
       
-      const response = await fetch(fullURL, {
+      phase = 'request'
+      response = await fetch(fullURL, {
         method: this.options.method,
         headers: {
           'Content-Type': 'application/json',
@@ -75,31 +81,69 @@ export class SSEClient {
       })
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        throw createSSEClientError(`HTTP ${response.status}: ${response.statusText}`, {
+          kind: 'response',
+          cause: response,
+          url: fullURL,
+          method: this.options.method,
+          status: response.status,
+          statusText: response.statusText,
+          reconnectAttempt: this.reconnectAttempts,
+          maxReconnectAttempts: this.options.reconnect?.maxAttempts,
+        })
       }
 
       const reader = response.body?.getReader()
       if (!reader) {
-        throw new Error('Response body is not readable')
+        throw createSSEClientError('Response body is not readable', {
+          kind: 'stream',
+          cause: response,
+          url: fullURL,
+          method: this.options.method,
+          status: response.status,
+          statusText: response.statusText,
+          reconnectAttempt: this.reconnectAttempts,
+          maxReconnectAttempts: this.options.reconnect?.maxAttempts,
+        })
       }
 
       const decoder = new TextDecoder()
 
       while (true) {
+        phase = 'stream'
         const { done, value } = await reader.read()
         
         if (done) break
         
         const chunk = decoder.decode(value, { stream: true })
+        currentChunk = chunk
         
         // 使用业务层提供的解析器
         if (options?.parser) {
-          const messages = options.parser(chunk)
-          for (const message of messages) {
-            yield message
+          try {
+            phase = 'parse'
+            const messages = options.parser(chunk)
+            currentChunk = undefined
+
+            for (const message of messages) {
+              yield message
+            }
+          } catch (error) {
+            throw createSSEClientError('Failed to parse SSE chunk', {
+              kind: 'parse',
+              cause: error,
+              url: fullURL,
+              method: this.options.method,
+              status: response.status,
+              statusText: response.statusText,
+              chunk,
+              reconnectAttempt: this.reconnectAttempts,
+              maxReconnectAttempts: this.options.reconnect?.maxAttempts,
+            })
           }
         } else {
           // 默认：直接输出原始文本块
+          currentChunk = undefined
           yield chunk
         }
       }
@@ -110,8 +154,22 @@ export class SSEClient {
       if (error.name === 'AbortError') {
         getLogger().debug('Stream aborted')
       } else {
-        getLogger().error('Stream error:', error)
-        options?.onError?.(error)
+        const clientError = error instanceof SSEClientError
+          ? error
+          : createSSEClientError(this.getErrorMessage(phase, error), {
+              kind: phase,
+              cause: error,
+              url: fullURL,
+              method: this.options.method,
+              status: response?.status,
+              statusText: response?.statusText,
+              chunk: currentChunk,
+              reconnectAttempt: this.reconnectAttempts,
+              maxReconnectAttempts: this.options.reconnect?.maxAttempts,
+            })
+
+        getLogger().error('Stream error:', clientError)
+        options?.onError?.(clientError)
         
         // 重连逻辑
         if (this.shouldReconnect()) {
@@ -120,7 +178,7 @@ export class SSEClient {
           yield* this.stream(request, options)
         } else {
           // 不重连时，重新抛出错误让调用者处理
-          throw error
+          throw clientError
         }
       }
     }
@@ -160,5 +218,33 @@ export class SSEClient {
     }
     
     return Math.min(calculatedDelay, maxDelay)
+  }
+
+  private getErrorMessage(
+    phase: 'config' | 'request' | 'response' | 'parse' | 'stream',
+    error: unknown
+  ): string {
+    if (error instanceof Error && error.message) {
+      return error.message
+    }
+
+    switch (phase) {
+      case 'config': {
+        return 'Failed to prepare SSE request'
+      }
+      case 'parse': {
+        return 'Failed to parse SSE chunk'
+      }
+      case 'request': {
+        return 'SSE request failed'
+      }
+      case 'response': {
+        return 'Invalid SSE response'
+      }
+      case 'stream':
+      default: {
+        return 'SSE stream failed'
+      }
+    }
   }
 }

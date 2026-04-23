@@ -6,6 +6,7 @@
  */
 
 import { WebSocketChannel } from './channel'
+import { createWebSocketChannelError } from './error'
 import type { WebSocketOptions, RealtimeChannel } from '../types'
 import { getRealtimeConfig, resolveURL, toWebSocketURL, getLogger } from '../config'
 
@@ -64,28 +65,69 @@ export class WebSocketClient {
         const wsURL = toWebSocketURL(httpURL)
         
         this.ws = new WebSocket(wsURL, this.options.protocols)
-        
-        const channel = new WebSocketChannel<TRequest, TResponse>(this.ws, this.options)
-        
-        this.ws.onopen = () => {
+        const ws = this.ws
+        const channel = new WebSocketChannel<TRequest, TResponse>(ws, this.options)
+        const channelOnError = ws.onerror
+        const channelOnClose = ws.onclose
+        let connected = false
+        let settled = false
+
+        const resolveOnce = (value: RealtimeChannel<TRequest, TResponse> | PromiseLike<RealtimeChannel<TRequest, TResponse>>) => {
+          if (settled) return
+          settled = true
+          resolve(value)
+        }
+
+        const rejectOnce = (reason?: unknown) => {
+          if (settled) return
+          settled = true
+          reject(reason)
+        }
+
+        ws.onopen = () => {
           getLogger().info('WebSocket connected')
+          connected = true
+          this.clearReconnectTimer()
           this.reconnectAttempts = 0
           this.startHeartbeat()
-          resolve(channel)
+          resolveOnce(channel)
         }
-        
-        this.ws.onerror = (error) => {
-          getLogger().error('WebSocket error:', error)
-          reject(error)
+
+        ws.onerror = (event) => {
+          channelOnError?.call(ws, event)
+
+          if (!connected) {
+            rejectOnce(createWebSocketChannelError(ws, 'WebSocket transport error', {
+              kind: 'transport',
+              cause: event,
+              event,
+            }))
+          }
         }
-        
-        this.ws.onclose = (event) => {
+
+        ws.onclose = (event) => {
+          channelOnClose?.call(ws, event)
           getLogger().info('WebSocket closed:', event.code, event.reason)
           this.stopHeartbeat()
           
           // 非正常关闭且非手动关闭，尝试重连
           if (event.code !== 1000 && !this.manualClose && this.shouldReconnect()) {
-            this.scheduleReconnect().then(() => resolve(this.connect<TRequest, TResponse>()))
+            this.scheduleReconnect()
+              .then(() => {
+                if (!connected) {
+                  resolveOnce(this.connect<TRequest, TResponse>())
+                }
+              })
+              .catch(rejectOnce)
+            return
+          }
+
+          if (!connected) {
+            rejectOnce(createWebSocketChannelError(ws, 'WebSocket closed before connection was established', {
+              kind: 'transport',
+              cause: event,
+              event,
+            }))
           }
         }
         
@@ -101,6 +143,7 @@ export class WebSocketClient {
   close(): void {
     this.manualClose = true
     this.stopHeartbeat()
+    this.clearReconnectTimer()
     
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.close(1000, 'Client closed')
@@ -141,8 +184,22 @@ export class WebSocketClient {
     const delay = this.getReconnectDelay()
     getLogger().info(`Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts + 1})`)
     
-    await new Promise(resolve => setTimeout(resolve, delay))
+    this.clearReconnectTimer()
+
+    await new Promise<void>((resolve) => {
+      this.reconnectTimer = setTimeout(() => {
+        this.reconnectTimer = null
+        resolve()
+      }, delay)
+    })
     this.reconnectAttempts++
+  }
+
+  private clearReconnectTimer(): void {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer)
+      this.reconnectTimer = null
+    }
   }
 
   private getReconnectDelay(): number {

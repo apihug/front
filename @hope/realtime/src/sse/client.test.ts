@@ -4,6 +4,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { SSEClient } from './client'
+import { SSEClientError } from './error'
 import { configureRealtimeClient, resetRealtimeConfig } from '../config'
 
 // 模拟 TextDecoder
@@ -165,7 +166,16 @@ describe('SSEClient', () => {
         }
         expect.fail('Should have thrown an error')
       } catch (error: any) {
-        // Expected error
+        expect(error).toBeInstanceOf(SSEClientError)
+        expect(error).toMatchObject({
+          name: 'SSEClientError',
+          kind: 'response',
+          status: 500,
+          statusText: 'Internal Server Error',
+          method: 'POST',
+          url: '/api/stream',
+          reconnectAttempt: 0,
+        })
       }
 
       consoleErrorSpy.mockRestore()
@@ -213,6 +223,33 @@ describe('SSEClient', () => {
       }
 
       expect(onError).toHaveBeenCalledWith(expect.any(Error))
+      consoleErrorSpy.mockRestore()
+    })
+
+    it('should wrap parser failures with raw chunk context', async () => {
+      const client = new SSEClient('/api/stream', {
+        reconnect: { enabled: false, maxAttempts: 0, delay: 0, maxDelay: 0, backoff: 'linear' },
+      })
+      const fetchMock = createFetchMock(['{"id":1}\n'])
+      vi.stubGlobal('fetch', fetchMock)
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      await expect(async () => {
+        for await (const _ of client.stream({}, {
+          parser: () => {
+            throw new Error('Parser failed')
+          },
+        })) {
+          // Should not reach here
+        }
+      }).rejects.toMatchObject({
+        name: 'SSEClientError',
+        kind: 'parse',
+        message: 'Failed to parse SSE chunk',
+        chunk: '{"id":1}\n',
+        url: '/api/stream',
+      } satisfies Partial<SSEClientError>)
+
       consoleErrorSpy.mockRestore()
     })
   })

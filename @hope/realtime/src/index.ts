@@ -37,8 +37,18 @@ export type {
 
 // SSE
 export { SSEClient } from './sse/client'
+export { SSEClientError } from './sse/error'
+export type {
+  SSEClientErrorContext,
+  SSEClientErrorKind,
+} from './sse/error'
 
 // WebSocket
 export { WebSocketClient } from './websocket/client'
 export { WebSocketChannel } from './websocket/channel'
+export { WebSocketChannelError } from './websocket/error'
+export type {
+  WebSocketChannelErrorContext,
+  WebSocketChannelErrorKind,
+} from './websocket/error'
 export { EventEmitter } from './websocket/event-emitter'

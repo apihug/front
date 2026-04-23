@@ -5,6 +5,7 @@
  */
 
 import { EventEmitter } from './event-emitter'
+import { createWebSocketChannelError } from './error'
 import type { RealtimeChannel, WebSocketOptions } from '../types'
 import { getLogger } from '../config'
 
@@ -73,13 +74,32 @@ export class WebSocketChannel<TRequest = any, TResponse = TRequest> extends Even
       
       this.emit('message', message as TResponse)
     } catch (error) {
-      getLogger().error('Failed to parse message:', error)
-      this.emit('error', error as Error)
+      const channelError = createWebSocketChannelError(
+        this.ws,
+        'Failed to parse WebSocket message',
+        {
+          kind: 'parse',
+          cause: error,
+          data: event.data,
+        }
+      )
+      getLogger().error('Failed to parse message:', channelError)
+      this.emit('error', channelError)
     }
   }
 
   private handleError(event: Event): void {
-    this.emit('error', new Error('WebSocket error'))
+    const channelError = createWebSocketChannelError(
+      this.ws,
+      'WebSocket transport error',
+      {
+        kind: 'transport',
+        cause: event,
+        event,
+      }
+    )
+    getLogger().error('WebSocket error:', channelError)
+    this.emit('error', channelError)
   }
 
   private handleClose(event: CloseEvent): void {
