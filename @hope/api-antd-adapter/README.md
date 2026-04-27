@@ -1,19 +1,22 @@
 ﻿# @hope/api-antd-adapter
 
-Convert neutral ApiHug `RequestItem` / `ResponseItem` schema into Ant Design Vue and Vben form/table config.
+Convert neutral ApiHug `RequestItem` / `ResponseItem` schema into AntD-style and Vben form/table config.
 
 ## Design Boundary
 
 - `@hope/api`: transport + neutral schema contract
-- `@hope/api-antd-adapter`: UI rendering adapter for AntD and Vben
+- `@hope/api-antd-adapter`: UI rendering adapter for AntD-style configs and Vben
 
 No AntD or Vben-specific structures should be placed in `@hope/api`.
+This package returns plain config objects and does not directly import `ant-design-vue` or `antdv-next`.
 
 ## Install
 
 ```bash
 pnpm add @hope/api-antd-adapter @hope/api
 ```
+
+Bring your own UI runtime in the app layer. In this repository, the generated configs are consumed by `antdv-next` and Vben.
 
 ## Quick Start
 

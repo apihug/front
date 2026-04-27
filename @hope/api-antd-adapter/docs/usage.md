@@ -9,10 +9,13 @@ Convert neutral ApiHug schema:
 
 into:
 
-- Ant Design Vue form fields
+- AntD-style form fields
 - Vben form schema
-- Ant Design Vue table columns
+- AntD-style table columns
 - Vxe table columns
+
+This package only returns plain config objects. It does not directly import `ant-design-vue` or `antdv-next`.
+In this repository, those outputs are consumed by `antdv-next` and Vben at the app layer.
 
 ## Basic Usage
 

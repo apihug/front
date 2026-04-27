@@ -62,8 +62,5 @@
   "dependencies": {
     "@hope/api": "workspace:*",
     "zod": "catalog:"
-  },
-  "peerDependencies": {
-    "ant-design-vue": "catalog:"
   }
 }
